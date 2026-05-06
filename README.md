@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# proc. 2.0
 
-## Getting Started
+A personal productivity app for students. Tracks exams, todos, and focus sessions — with a daily morning and evening ritual powered by AI.
 
-First, run the development server:
+Built for daily use, not for show.
+
+---
+
+## What it does
+
+**Dashboard** — overview of today: briefing status, open todos, focus time, next exam.
+
+**Briefing** — a two-part daily ritual.
+- Morning: set your intention, energy level, and get 3–4 tasks for the day.
+- Evening: reflect on the day, get follow-up questions, and a short mentor-style summary.
+- Falls back to an algorithmic summary if the AI is unavailable.
+
+**Focus** — a session timer with deep work mode. Logs every session with category and duration.
+
+**Klausuren** — exam tracker with dates, grades, and subject averages. Generates a day-by-day study plan for each exam.
+
+**Todos** — priority-based task list. Tasks from the morning briefing land here automatically.
+
+---
+
+## Stack
+
+- **Next.js 14** (App Router)
+- **Supabase** — auth, database, row-level security
+- **Gemini API** — AI briefings (with cascade fallback across model versions)
+- **Framer Motion** — animations
+- **Tailwind CSS** + custom CSS design system ("Arctic Glass")
+- **PWA** — installable, works offline-adjacent on mobile
+
+---
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create `.env.local`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+GEMINI_API_KEY=
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
 
-## Learn More
+### Database
 
-To learn more about Next.js, take a look at the following resources:
+The app expects a Supabase project with the following tables: `profiles`, `klausuren`, `todos`, `focus_sessions`, `briefings`. Row-level security is enabled on all tables.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project structure
 
-## Deploy on Vercel
+```
+app/
+  (auth)/login/        Login page (magic link, password, register)
+  (app)/               Protected routes (dashboard, briefing, focus, klausuren, todos, settings)
+  api/briefing/        Morning and evening AI routes
+  auth/callback/       OAuth / magic link callback
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+components/
+  layout/              Sidebar, BottomNav
+  proc/                Feature components (MorningRitual, EveningRitual, KlausurCard, ...)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+lib/
+  ai/                  Gemini client, prompt builders, context serializer
+  hooks/               useKlausuren, useTodos, useFocusSessions, useMediaQuery
+  supabase/            Client, server, and middleware setup
+```
+
+---
+
+## Notes
+
+- The app is in German — it's built for a specific user.
+- AI calls cascade through model versions: primary fails → fallback model → algorithmic summary.
+- Mobile layout uses a bottom nav bar; desktop uses a sidebar. Both are driven by CSS classes, not JS.
